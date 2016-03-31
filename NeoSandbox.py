@@ -131,83 +131,89 @@ def loadFromFiles(csvfiles):
 
 
 def findTrusted(userID):
-    org = graph_db.cypher.execute("match (a:user)--(b:organization) where a.userID = %d return b.organization"%(userID))[0]
-    query = '''match (a:user)--(b:organization) where a.userID = %d
-WITH b.organization as orgName
-match (c:user)--(d:organization) where d.organization = orgName and c.userID <> %d
-WITH c.userID as userIDs
-match (e:user)--(f:project) where e.userID = userIDs 
-WITH f.project as project,userIDs as users
-match (g:user)--(h:project) where h.project = project and g.userID <> users
-with g as trusted
-match (a:user)--(b:interest) where a.userID = %d
-with b as interests,trusted
-match (c:user)--(d:interest) where d=interests and c.userID <> %d and c=trusted
-with  DISTINCT c as trustedUsers,collect(d.interest) as interests
-match (a:user)--(b:organization) where a = trustedUsers
-with trustedUsers,b.organization as trustedOrgs,interests
-match (a:user)--(b:project) where a = trustedUsers
-return a as trustedUsers,trustedOrgs,b.project as projects,interests''' % (userID,userID,userID,userID)
-    print "Organization of user entered is: %s" % (org[0])
-    if(len(graph_db.cypher.execute(query)) == 0):
-        print "There are no trusted colleagues of the user you chose"
+    if(len(graph_db.cypher.execute("match (a:user) where a.userID = %d return a.userID"%(userID))) == 0):
+        print "This user does not exist. Please try another userID."
     else:
-        print "Trusted colleagues of colleagues of selected user is:"
-        for record in graph_db.cypher.execute(query):
-            print "\tName: "+record[0]['fName'],record[0]['lName']
-            print "\tUser ID: "+str(record[0]['userID'])
-            print "\tOrganization: "+record[1]
-            print "\tProject: " + record[2]
-            print "\tCommon Interests with User:",", ".join(record[3])
-            print ""
+        org = graph_db.cypher.execute("match (a:user)--(b:organization) where a.userID = %d return b.organization"%(userID))[0]
+        query = '''match (a:user)--(b:organization) where a.userID = %d
+        WITH b.organization as orgName
+        match (c:user)--(d:organization) where d.organization = orgName and c.userID <> %d
+        WITH c.userID as userIDs
+        match (e:user)--(f:project) where e.userID = userIDs 
+        WITH f.project as project,userIDs as users
+        match (g:user)--(h:project) where h.project = project and g.userID <> users
+        with g as trusted
+        match (a:user)--(b:interest) where a.userID = %d
+        with b as interests,trusted
+        match (c:user)--(d:interest) where d=interests and c.userID <> %d and c=trusted
+        with  DISTINCT c as trustedUsers,collect(d.interest) as interests
+        match (a:user)--(b:organization) where a = trustedUsers
+        with trustedUsers,b.organization as trustedOrgs,interests
+        match (a:user)--(b:project) where a = trustedUsers
+        return a as trustedUsers,trustedOrgs,b.project as projects,interests''' % (userID,userID,userID,userID)
+        print "Organization of user entered is: %s" % (org[0])
+        if(len(graph_db.cypher.execute(query)) == 0):
+            print "There are no trusted colleagues of the user you chose"
+        else:
+            print "Trusted colleagues of colleagues of selected user is:"
+            for record in graph_db.cypher.execute(query):
+                print "\tName: "+record[0]['fName'],record[0]['lName']
+                print "\tUser ID: "+str(record[0]['userID'])
+                print "\tOrganization: "+record[1]
+                print "\tProject: " + record[2]
+                print "\tCommon Interests with User:",", ".join(record[3])
+                print ""
 
 def deleteAll():
     query = "match n detach delete n"
     graph_db.cypher.execute(query)
 
 def findCommon(userID):
-    query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
-    WITH m.organization as Org, n.organizationType as orgType
-    match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = orgType
-    WITH m.organization as closeOrgs, Org
-    match (a:organization)-[`WORKS AT`]-(c:user) 
-    where a.organization = closeOrgs or a.organization = Org
-    WITH DISTINCT c.userID as closeUsers, a.organization as org
-    match (a:user)--(b:interest)-[r:HAS]-(c:user) where a.userID = %d and c.userID = closeUsers
-    return c as users, sum(r.level) as userSum, org, collect(b.interest) as interests
-    ORDER BY userSum DESC
-    ''' % (userID,userID)
-    if(len(graph_db.cypher.execute(query)) == 0):
-        print "There are no users close to the one you chose who have similar interests"
+    if(len(graph_db.cypher.execute("match (a:user) where a.userID = %d return a.userID"%(userID))) == 0):
+        print "This user does not exist. Please try another userID."
+    else:
+        query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
+        WITH m.organization as Org, n.organizationType as orgType
+        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = orgType
+        WITH m.organization as closeOrgs, Org
+        match (a:organization)-[`WORKS AT`]-(c:user) 
+        where a.organization = closeOrgs or a.organization = Org
+        WITH DISTINCT c.userID as closeUsers, a.organization as org
+        match (a:user)--(b:interest)-[r:HAS]-(c:user) where a.userID = %d and c.userID = closeUsers
+        return c as users, sum(r.level) as userSum, org, collect(b.interest) as interests
+        ORDER BY userSum DESC
+        ''' % (userID,userID)
+        if(len(graph_db.cypher.execute(query)) == 0):
+            print "There are no users close to the one you chose who have similar interests"
+            
+        else:
+            print "The following people are within 10 miles of the user entered and have similar interests, sorted by weight of interests: \n"
+            for record in graph_db.cypher.execute(query):
+                print record[0]['fName'],record[0]['lName'],":"
+                print "\tOrganization of user: " + record[2]
+                print "\tSum of Weights of Interests in common with user: " + str(record[1])
+                print "\tInterests in common:",", ".join(record[3])
+                print ""
         
-    else:
-        print "The following people are within 10 miles of the user entered and have similar interests, sorted by weight of interests: \n"
-        for record in graph_db.cypher.execute(query):
-            print record[0]['fName'],record[0]['lName'],":"
-            print "\tOrganization of user: " + record[2]
-            print "\tSum of Weights of Interests in common with user: " + str(record[1])
-            print "\tInterests in common:",", ".join(record[3])
-            print ""
-    
-    print "\n"
-    query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
-    WITH m.organization as Org, n.organizationType as orgType
-    match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = orgType
-    WITH m.organization as closeOrgs, Org
-    match (a:organization)-[`WORKS AT`]-(c:user) 
-    where a.organization = closeOrgs or a.organization = Org
-    WITH DISTINCT c.userID as closeUsers, a.organization as org
-    match (a:user)--(b:skill)-[r:HAS]-(c:user) where a.userID = %d and c.userID = closeUsers
-    return c as users, sum(r.level) as userSum, org, collect(b.skill) as skills
-    ORDER BY userSum DESC
-    ''' % (userID,userID)
-    if(len(graph_db.cypher.execute(query)) == 0):
-        print "There are no users similar to the one you chose who have smiliar skills"
-    else:
-        print "The following people are within 10 miles of the user entered and have similar skills, sorted by weight of skill: \n"
-        for record in graph_db.cypher.execute(query):
-            print record[0]['fName'],record[0]['lName'],":"
-            print "\tOrganization of user: " + record[2]
-            print "\tSum of Weights of Skills in common with user: " + str(record[1])
-            print "\tSkills in common: ",", ".join(record[3])
-            print ""
+        print "\n"
+        query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
+        WITH m.organization as Org, n.organizationType as orgType
+        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = orgType
+        WITH m.organization as closeOrgs, Org
+        match (a:organization)-[`WORKS AT`]-(c:user) 
+        where a.organization = closeOrgs or a.organization = Org
+        WITH DISTINCT c.userID as closeUsers, a.organization as org
+        match (a:user)--(b:skill)-[r:HAS]-(c:user) where a.userID = %d and c.userID = closeUsers
+        return c as users, sum(r.level) as userSum, org, collect(b.skill) as skills
+        ORDER BY userSum DESC
+        ''' % (userID,userID)
+        if(len(graph_db.cypher.execute(query)) == 0):
+            print "There are no users similar to the one you chose who have smiliar skills"
+        else:
+            print "The following people are within 10 miles of the user entered and have similar skills, sorted by weight of skill: \n"
+            for record in graph_db.cypher.execute(query):
+                print record[0]['fName'],record[0]['lName'],":"
+                print "\tOrganization of user: " + record[2]
+                print "\tSum of Weights of Skills in common with user: " + str(record[1])
+                print "\tSkills in common: ",", ".join(record[3])
+                print ""
