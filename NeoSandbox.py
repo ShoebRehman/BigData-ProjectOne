@@ -11,9 +11,11 @@ authenticate("localhost:7474","neo4j","shoebr")
 graph_db = Graph()
 
 try: #create uniqueness constraints on these nodes
+    graph_db.schema.create_uniqueness_constraint("user","userID")
     graph_db.schema.create_uniqueness_constraint("interest","interest")
     graph_db.schema.create_uniqueness_constraint("skill","skill")
     graph_db.schema.create_uniqueness_constraint("organization","organization")
+    graph_db.schema.create_uniqueness_constraint("organizationType","organizationType")
     graph_db.schema.create_uniqueness_constraint("project","project")
 except:#error ConstraintViolationException is thrown when already created. this ensures the DB has the constraints
     pass
@@ -196,6 +198,6 @@ def findCommon(userID):
     for record in graph_db.cypher.execute(query):
         print record[0]['fName'],record[0]['lName'],":"
         print "\tOrganization of user: " + record[2]
-        print "\tSum of Weights of Interests in common with user: " + str(record[1])
+        print "\tSum of Weights of Skills in common with user: " + str(record[1])
         print "\tSkills in common: ",", ".join(record[3])
         print ""
