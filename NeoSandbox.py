@@ -161,9 +161,9 @@ def deleteAll():
     graph_db.cypher.execute(query)
 
 def findCommon(userID):
-    query = '''match (a:user)-[`WORKS AT`]-(m:organization) where a.userID = %d
-    WITH m.organization as Org
-    match (n:organization)-[a:DISTANCE]-(m:organization) where a.distance <= 10 and n.organization = Org
+    query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
+    WITH m.organization as Org, n.organizationType as orgType
+    match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = orgType
     WITH m.organization as closeOrgs, Org
     match (a:organization)-[`WORKS AT`]-(c:user) 
     where a.organization = closeOrgs or a.organization = Org
@@ -181,9 +181,9 @@ def findCommon(userID):
         print ""
     
     print "\n"
-    query = '''match (a:user)-[`WORKS AT`]-(m:organization) where a.userID = %d
-    WITH m.organization as Org
-    match (n:organization)-[a:DISTANCE]-(m:organization) where a.distance <= 10 and n.organization = Org
+    query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
+    WITH m.organization as Org, n.organizationType as orgType
+    match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = orgType
     WITH m.organization as closeOrgs, Org
     match (a:organization)-[`WORKS AT`]-(c:user) 
     where a.organization = closeOrgs or a.organization = Org
