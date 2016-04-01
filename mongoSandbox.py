@@ -2,11 +2,11 @@ import pymongo, csv
 
 client = pymongo.MongoClient()
 db = client["projectOne"]
-user= db["Users"]
+users= db["Users"]
 organizations= db["Organizations"]
 interests= db["Interests"]
 projects= db["Projects"]
-skill= db["Skill"]
+skills= db["Skill"]
 
 def main():
     client = pymongo.MongoClient()
@@ -27,14 +27,14 @@ def main():
 
 
 def lookUpUser(userID):
-    if((user.find({"userID": str(userID)})).count() == 0):
+    if((users.find({"userID": str(userID)})).count() == 0):
         print "This user does not exist. Please try another userID."
 
     else:
-        user_results = user.find({"userID": str(userID)})   
+        user_results = users.find({"userID": str(userID)})   
         organization_result = organizations.find({"userID": str(userID)})
         interests_results = interests.find({"userID": str(userID)})
-        skill_results = skill.find({"userID": str(userID)})
+        skill_results = skills.find({"userID": str(userID)})
         projects_results = projects.find({"userID": str(userID)})
         
         for u in user_results:
@@ -88,3 +88,13 @@ def readFile(file_name):
 def insertData(collection_name, entries):
     for data in entries:
         collection_name.insert_one(data)
+        
+def loadFiles(csvfiles):    
+    insertData(users,readFile(csvfiles[0]))
+    insertData(organizations,readFile(csvfiles[1]))
+    insertData(projects,readFile(csvfiles[2]))
+    insertData(interests,readFile(csvfiles[3]))
+    insertData(skills,readFile(csvfiles[4]))
+    
+def dropDB():
+    client.drop_database("projectOne") 
