@@ -43,20 +43,28 @@ def lookUpUser(userID):
         for o in organization_result:
             print("\tWorks at: %s" %o["organization"])
     
-        interests_collection = ""
-        
-        for i in interests_results:
-            interests_collection += str(i['interest']) + "(" +str(i['interest_level']) + "),"
-        print("\tInterests: %s" % interests_collection)
-    
-        skill_collection = ""
-        
-        for sk in skill_results:
-             skill_collection += str(sk['skill']) + "(" +str(sk['skill_level']) + "),"
-        print("\tSkill : %s" %skill_collection)    
-    
-        for p in projects_results:
-            print("\tWorks on: %s" %p["project"])
+        interest_collection=  ""
+	for i in interests_results:
+		if isinstance(i["interest"], list):
+			for items in range(len(i["interest"])):
+				interest_collection+= i["interest"][items] + "(" + i["interest_level"][items] + "),"
+		else:
+			interest_collection = i["interest"] + "(" + i["interest_level"] + ")"
+			
+	print("\tInterest: %s" %interest_collection)
+
+	skill_collection = ""
+	for sk in skill_results:
+		if isinstance(sk["skill"], list):
+		 	for items in range(len(sk["skill"])):
+		 		skill_collection += sk["skill"][items] + "(" + sk["skill_level"][items] + "), "
+		else:
+			skill_collection = sk["skill"] + "(" + sk["skill_level"] + ")"
+	print("\tSkill: %s" %skill_collection)
+	
+
+	for p in projects_results:
+		print("\tWorks on: %s" %p["project"])
 
 
 def readFile(file_name):
