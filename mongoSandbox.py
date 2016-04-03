@@ -46,7 +46,7 @@ def lookUpUser(userID):
         interests_collection = ""
         
         for i in interests_results:
-            interests_collection += str(i['interest']) + "(" +str(i['Interest level']) + "),"
+            interests_collection += str(i['interest']) + "(" +str(i['interest_level']) + "),"
         print("\tInterests: %s" % interests_collection)
     
         skill_collection = ""
@@ -86,6 +86,7 @@ def readFile(file_name):
 
 
 def insertData(collection_name, entries):
+    collection_name.create_index("userID", unique= True)
     for data in entries:
         collection_name.insert_one(data)
         
@@ -93,8 +94,67 @@ def loadFiles(csvfiles):
     insertData(users,readFile(csvfiles[0]))
     insertData(organizations,readFile(csvfiles[1]))
     insertData(projects,readFile(csvfiles[2]))
-    insertData(interests,readFile(csvfiles[3]))
-    insertData(skills,readFile(csvfiles[4]))
-    
+    insertData(interests,readIntOrSkill(csvfiles[3],"interest"))
+    insertData(skills,readIntOrSkill(csvfiles[4],"skill"))
+
+def readIntOrSkill(file_name, tag):
+	r_file = open(file_name, "r")
+	csv_file = csv.reader(r_file)
+	headers = next(csv_file)
+	
+	keys = headers
+	
+	
+	data_collection = []
+	interests.create_index([("userID", pymongo.ASCENDING), ("interest", pymongo.DESCENDING)], unique=True)
+	skills.create_index([("userID", pymongo.ASCENDING), ("skill", pymongo.DESCENDING)], unique=True)
+	for rows in csv_file:
+		data = {}
+		for column in range(len(rows)):
+			data[keys[column]] = rows[column]
+		if findMatchingId(data, data_collection, tag):
+			data_collection.append(data)
+
+	r_file.close()
+	return data_collection
+
+
+#checks if there is a matching user id and then creates a list for skill/interest along with level
+def findMatchingId(info, arr, tag):
+	if tag == "interest":
+		for elements in arr:
+			if elements["userID"] == info["userID"]:
+				if not isinstance(elements["interest"], list):
+					elements["interest"] = [elements["interest"], info["interest"]]
+					elements["interest_level"] = [elements["interest_level"], info["interest_level"]]
+				else:
+					if info["interest"] not in elements["interest"]:
+						elements["interest"].append(info["interest"])
+						elements["interest_level"].append(info["interest_level"])
+				return False
+		return True
+
+	elif tag == "skill":
+		for elements in arr:
+			if elements["userID"] == info["userID"]:
+				if not isinstance(elements["skill"], list):
+					elements["skill"] = [elements["skill"], info["skill"]]
+					elements["skill_level"] = [elements["skill_level"], info["skill_level"]]
+				else:
+					if info["skill"] not in elements['skill']:
+						elements["skill"].append(info["skill"])
+						elements["skill_level"].append(info["skill_level"])
+				return False
+		return True
+
+def insertData(collection_name, entries):
+	if collection_name != skills or collection_name != interests:
+		collection_name.create_index("userID", unique= True)
+
+	for data in entries:
+		try:
+			collection_name.insert_one(data)
+		except:
+                    pass
 def dropDB():
-    client.drop_database("projectOne") 
+    client.drop_database("projectOne")
