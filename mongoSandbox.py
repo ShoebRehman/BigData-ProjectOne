@@ -63,8 +63,15 @@ def lookUpUser(userID):
 	print("\tSkill: %s" %skill_collection)
 	
 
+	project_collection= ""
 	for p in projects_results:
-		print("\tWorks on: %s" %p["Project"])
+		if isinstance(p["Project"], list):
+		 	for items in range(len(p["Project"])):
+		 		project_collection += p["Project"][items] + ", "
+		else:
+			project_collection = p["Project"]
+	
+	print("\tWorks on: %s" %project_collection)
 
 
 def readFile(file_name):
@@ -102,7 +109,7 @@ def insertData(collection_name, entries):
 def loadFiles(csvfiles):    
     insertData(users,readFile(csvfiles[0]))
     insertData(organizations,readFile(csvfiles[1]))
-    insertData(projects,readFile(csvfiles[2]))
+    insertData(projects,readIntOrSkill(csvfiles[2],"project"))
     insertData(interests,readIntOrSkill(csvfiles[3],"interest"))
     insertData(skills,readIntOrSkill(csvfiles[4],"skill"))
 
@@ -153,6 +160,17 @@ def findMatchingId(info, arr, tag):
 					if info["Skill"] not in elements['Skill']:
 						elements["Skill"].append(info["Skill"])
 						elements["Skill level"].append(info["Skill level"])
+				return False
+		return True
+
+	elif tag == "project":
+		for elements in arr:
+			if elements["User_id"] == info["User_id"]:
+				if not isinstance(elements["Project"], list):
+					elements["Project"] = [elements["Project"], info["Project"]]
+				else:
+					if info["Project"] not in elements['Project']:
+						elements["Project"].append(info["Project"])
 				return False
 		return True
 
