@@ -1,11 +1,4 @@
-Company 1,Company 2,Distance
-CUNY Hunter College,CUNY Baruch College,5
-CUNY Hunter College,Intel Corporation,3
-CUNY Hunter College,SUNY Stony Brook,13
-CUNY Hunter College,SVA,3
-CUNY Baruch College,Intel Corporation,19
-CUNY Baruch College,SUNY Stony Brook,12
-CUNY Baruch College,SVA,2
-Intel Corporation,SUNY Stony Brook,23
-Intel Corporation,SVA,15
-SUNY Stony Brook,SVA,9
+Organization 1,Organization 2,Distance
+O1,O2,15
+O1,O3,7.8
+O2,O3,9.2
