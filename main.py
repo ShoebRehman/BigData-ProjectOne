@@ -13,7 +13,7 @@ def menu():
     while(True):
         choice = raw_input('''1. Load From Files\n2. Find Individuals with Similar Interests\n3. Find Trusted Colleagues of Colleagues\n4. Query a User via userID\n5. Clear Databases\n6. Exit\nChoice: ''')
         if(choice == '1'):
-            csvFiles = ['names.csv','organizations.csv','projects.csv','interests.csv','skills.csv','distance.csv']
+            csvFiles = ['user.csv','organization.csv','project.csv','interest.csv','skill.csv','distance.csv']
             loadData(csvFiles)
         if(choice == '2'):
             userID = int(raw_input('Enter userID you wish you query for: '))

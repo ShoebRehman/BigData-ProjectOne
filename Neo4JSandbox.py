@@ -130,7 +130,7 @@ def loadFromFiles(csvfiles):
                     org1 = graph_db.merge_one("organization","organization", row[0])
                     org2 = graph_db.merge_one("organization","organization", row[1])
                     dist = Relationship(org1,"DISTANCE",org2)
-                    dist.properties['distance'] = long(row[2])
+                    dist.properties['distance'] = float(row[2])
                     graph_db.create(dist)
 
 
