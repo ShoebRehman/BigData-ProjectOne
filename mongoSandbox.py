@@ -94,6 +94,7 @@ def readFile(file_name):
 
 
 def insertData(collection_name, entries):
+    print entries
     collection_name.create_index("User_id", unique= True)
     for data in entries:
         collection_name.insert_one(data)
@@ -157,12 +158,13 @@ def findMatchingId(info, arr, tag):
 
 def insertData(collection_name, entries):
 	if collection_name != skills or collection_name != interests:
-		collection_name.create_index("User_Id", unique= True)
+		collection_name.create_index("User_id", unique= True)
 
 	for data in entries:
 		try:
 			collection_name.insert_one(data)
 		except:
+                    print data
                     pass
 def dropDB():
     client.drop_database("projectOne")
