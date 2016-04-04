@@ -5,6 +5,7 @@ To Run:
 Launch main.py and run
 
 Options explained:
+
 1) Load data from CSV files into Neo4J Database and MongoDB Database. The script requires each file to be named as the following:
 'names.csv' for First and Last Names for each coresponding userID
 'organizations.csv' for the organization userID belongs in and type of organization
