@@ -179,7 +179,7 @@ def findCommon(userID):
     else:
         query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
         WITH m.organization as Org, n.organizationType as orgType
-        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = orgType
+        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org
         WITH m.organization as closeOrgs, Org
         match (a:organization)-[`WORKS AT`]-(c:user) 
         where a.organization = closeOrgs or a.organization = Org
@@ -203,7 +203,7 @@ def findCommon(userID):
         print "\n"
         query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
         WITH m.organization as Org, n.organizationType as orgType
-        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = orgType
+        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org
         WITH m.organization as closeOrgs, Org
         match (a:organization)-[`WORKS AT`]-(c:user) 
         where a.organization = closeOrgs or a.organization = Org
