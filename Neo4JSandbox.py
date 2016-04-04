@@ -155,7 +155,7 @@ def findTrusted(userID):
         match (a:user)--(b:organization) where a = trustedUsers
         with trustedUsers,b.organization as trustedOrgs,interests
         match (a:user)--(b:project) where a = trustedUsers
-        return a as trustedUsers,trustedOrgs,b.project as projects,interests''' % (userID,userID,userID,userID)
+        return a as trustedUsers,trustedOrgs,collect(b.project) as projects,interests''' % (userID,userID,userID,userID)
         print "Organization of user entered is: %s" % (org[0])
         if(len(graph_db.cypher.execute(query)) == 0):
             print "There are no trusted colleagues of the user you chose"
@@ -165,7 +165,7 @@ def findTrusted(userID):
                 print "\tName: "+record[0]['fName'],record[0]['lName']
                 print "\tUser ID: "+str(record[0]['userID'])
                 print "\tOrganization: "+record[1]
-                print "\tProject: " + record[2]
+                print "\tProject: ",", ".join(record[2])
                 print "\tCommon Interests with User:",", ".join(record[3])
                 print ""
 
@@ -179,7 +179,7 @@ def findCommon(userID):
     else:
         query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
         WITH m.organization as Org, n.organizationType as orgType
-        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org
+        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = "U"
         WITH m.organization as closeOrgs, Org
         match (a:organization)-[`WORKS AT`]-(c:user) 
         where a.organization = closeOrgs or a.organization = Org
@@ -203,7 +203,7 @@ def findCommon(userID):
         print "\n"
         query = '''match (a:user)-[`WORKS AT`]-(m:organization)--(n:organizationType) where a.userID = %d
         WITH m.organization as Org, n.organizationType as orgType
-        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org
+        match (n:organization)-[a:DISTANCE]-(m:organization)--(t:organizationType) where a.distance <= 10 and n.organization = Org and t.organizationType = "U"
         WITH m.organization as closeOrgs, Org
         match (a:organization)-[`WORKS AT`]-(c:user) 
         where a.organization = closeOrgs or a.organization = Org
